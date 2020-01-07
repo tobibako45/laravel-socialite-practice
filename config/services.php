@@ -33,6 +33,6 @@ return [
     'passport' => [
         'client_id' => env('PASSPORT_ID'),
         'client_secret' => env('PASSPORT_SECRET'),
-        'redirect' => env('APP_URL') . '/login/foo/callback',
+        'redirect' => env('APP_URL') . '/login/passport/callback',
     ],
 ];
