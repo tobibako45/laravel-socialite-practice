@@ -70,7 +70,7 @@ class LoginController extends Controller
                 'grant_type' => 'authorization_code',
                 'client_id' => env('PASSPORT_ID'),
                 'client_secret' => env('PASSPORT_SECRET'),
-                'redirect_uri' => env('APP_URL') . '/login/passport/callback',
+                'redirect_uri' => 'http://localhost:8000/login/passport/callback',
                 'code' => request()->code
             ],
         ]);
