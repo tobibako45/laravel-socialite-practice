@@ -49,8 +49,19 @@ class LoginController extends Controller
      */
     protected function authenticated()
     {
-        session()->flash('msg_success', 'ログインしました');
-        return redirect('/');
+        return redirect('/')->with('my_status', __('ログインしました'));
+    }
+
+    /**
+     * ログアウト後の処理
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
+     */
+    public function logout(Request $request)
+    {
+        $this->guard()->logout();
+        $request->session()->invalidate();
+        return $this->loggedOut($request) ?: redirect('/')->with('my_status', __('ログアウトしました'));
     }
 
     /**
@@ -79,7 +90,7 @@ class LoginController extends Controller
 
         if ($user) {
             Auth::login($user);
-            return $this->authenticated($request, $this->guard()->user());
+            return $this->authenticated($request, Auth::user());
         } else {
             $user = User::create([
                 'name' => $auth_user['name'],
@@ -87,7 +98,7 @@ class LoginController extends Controller
                 'password' => Hash::make($auth_user['name']),
             ]);
             Auth::login($user);
-            return $this->authenticated($request, $this->guard()->user());
+            return $this->authenticated($request, Auth::user());
         }
     }
 
@@ -103,7 +114,7 @@ class LoginController extends Controller
 
         if ($user) {
             Auth::login($user);
-            return $this->authenticated($request, $this->guard()->user());
+            return $this->authenticated($request, Auth::user());
         } else {
             $user = User::create([
                 'name' => $socialUser->getNickname(),
@@ -111,7 +122,7 @@ class LoginController extends Controller
                 'password' => Hash::make($socialUser->getNickname()), // NicknameをHash
             ]);
             Auth::login($user);
-            return $this->authenticated($request, $this->guard()->user());
+            return $this->authenticated($request, Auth::user());
         }
     }
 
@@ -149,5 +160,4 @@ class LoginController extends Controller
         ]);
         return json_decode((string)$response_user_data->getBody(), true);
     }
-
 }

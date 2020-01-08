@@ -13,7 +13,7 @@
 
 Auth::routes();
 
-Route::get('/', 'HomeController@index')->name('home');
+Route::get('/', 'BlogsController@index');
 
 Route::get('/login/{provider}', 'Auth\LoginController@redirectToProvider');
 // Route::get('/login/{provider}/callback', 'Auth\LoginController@handleProviderCallback');
