@@ -9,6 +9,7 @@ use Hash;
 use Auth;
 use Socialite;
 use App\User;
+use Illuminate\Http\Request;
 
 class LoginController extends Controller
 {
@@ -43,6 +44,27 @@ class LoginController extends Controller
     }
 
     /**
+     * ログイン後の処理
+     * AuthenticatesUsersから上書き
+     */
+    protected function authenticated()
+    {
+        return redirect('/')->with('my_status', __('ログインしました'));
+    }
+
+    /**
+     * ログアウト後の処理
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
+     */
+    public function logout(Request $request)
+    {
+        $this->guard()->logout();
+        $request->session()->invalidate();
+        return $this->loggedOut($request) ?: redirect('/login')->with('my_status', __('ログアウトしました'));
+    }
+
+    /**
      * OAuth認証先にリダイレクト
      * @param string $provider
      * @return
@@ -54,8 +76,10 @@ class LoginController extends Controller
 
     /**
      * OAuth認証の結果受け取り
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
      */
-    public function handleProviderCallback()
+    public function handleProviderCallback(Request $request)
     {
         //// ほんとはこの辺をSocialiteで独自Driverを作ってやりたい ////
 
@@ -66,7 +90,7 @@ class LoginController extends Controller
 
         if ($user) {
             Auth::login($user);
-            return redirect('/home');
+            return $this->authenticated($request, Auth::user());
         } else {
             $user = User::create([
                 'name' => $auth_user['name'],
@@ -74,21 +98,23 @@ class LoginController extends Controller
                 'password' => Hash::make($auth_user['name']),
             ]);
             Auth::login($user);
-            return redirect('/home');
+            return $this->authenticated($request, Auth::user());
         }
     }
 
     /**
      * Github用Callback
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
      */
-    public function handleGithubProviderCallback()
+    public function handleGithubProviderCallback(Request $request)
     {
         $socialUser = Socialite::driver('github')->stateless()->user();
         $user = User::where(['email' => $socialUser->getEmail()])->first();
 
         if ($user) {
             Auth::login($user);
-            return redirect('/home');
+            return $this->authenticated($request, Auth::user());
         } else {
             $user = User::create([
                 'name' => $socialUser->getNickname(),
@@ -96,7 +122,7 @@ class LoginController extends Controller
                 'password' => Hash::make($socialUser->getNickname()), // NicknameをHash
             ]);
             Auth::login($user);
-            return redirect('/home');
+            return $this->authenticated($request, Auth::user());
         }
     }
 
@@ -134,5 +160,4 @@ class LoginController extends Controller
         ]);
         return json_decode((string)$response_user_data->getBody(), true);
     }
-
 }
