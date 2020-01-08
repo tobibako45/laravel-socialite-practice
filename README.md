@@ -3,6 +3,8 @@
 #### １、前提
 [Laravel\-passport(リソースサーバー側)](https://github.com/tobibako45/laravel-passport-practice)が設定されていることが前提
 
+<br>
+
 #### ２、.envを記入
 
 [Laravel\-passport(リソースサーバー側)](https://github.com/tobibako45/laravel-passport-practice)で作った、クライアントの情報をenvを記入。
