@@ -66,7 +66,7 @@ class LoginController extends Controller
 
         if ($user) {
             Auth::login($user);
-            return redirect('/home');
+            return redirect('/');
         } else {
             $user = User::create([
                 'name' => $auth_user['name'],
@@ -74,7 +74,7 @@ class LoginController extends Controller
                 'password' => Hash::make($auth_user['name']),
             ]);
             Auth::login($user);
-            return redirect('/home');
+            return redirect('/');
         }
     }
 
@@ -88,7 +88,7 @@ class LoginController extends Controller
 
         if ($user) {
             Auth::login($user);
-            return redirect('/home');
+            return redirect('/');
         } else {
             $user = User::create([
                 'name' => $socialUser->getNickname(),
@@ -96,7 +96,7 @@ class LoginController extends Controller
                 'password' => Hash::make($socialUser->getNickname()), // NicknameをHash
             ]);
             Auth::login($user);
-            return redirect('/home');
+            return redirect('/');
         }
     }
 
