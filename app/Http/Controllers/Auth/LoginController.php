@@ -61,7 +61,7 @@ class LoginController extends Controller
     {
         $this->guard()->logout();
         $request->session()->invalidate();
-        return $this->loggedOut($request) ?: redirect('/')->with('my_status', __('ログアウトしました'));
+        return $this->loggedOut($request) ?: redirect('/login')->with('my_status', __('ログアウトしました'));
     }
 
     /**
