@@ -88,6 +88,9 @@
             <label for="github" class="col-md-6 col-form-label text-md-right">
                 <a href="{{ url('login/passport') }}">Laravel-Passportでログインする</a>
             </label>
+            <label for="github" class="col-md-6 col-form-label text-md-right">
+                <a href="{{ url('login/github') }}">Githubでログインする</a>
+            </label>
         </div>
 
         <div class="links">

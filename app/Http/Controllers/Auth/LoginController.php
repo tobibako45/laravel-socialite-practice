@@ -54,13 +54,10 @@ class LoginController extends Controller
 
     /**
      * OAuth認証の結果受け取り
-     * @param $provider
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
      */
-    public function handleProviderCallback($provider)
+    public function handleProviderCallback()
     {
         //// ほんとはこの辺をSocialiteで独自Driverを作ってやりたい ////
-        // $socialUser = Socialite::driver($provider)->user();
         // $socialUser = Socialite::driver($provider)->stateless()->user();
         // $socialUser = Socialite::with($provider)->stateless()->user();
 
@@ -101,4 +98,27 @@ class LoginController extends Controller
             return redirect('/home');
         }
     }
+
+    /**
+     * Github用Callback
+     */
+    public function handleGithubProviderCallback()
+    {
+        $socialUser = Socialite::driver('github')->stateless()->user();
+        $user = User::where(['email' => $socialUser->getEmail()])->first();
+
+        if ($user) {
+            Auth::login($user);
+            return redirect('/home');
+        } else {
+            $user = User::create([
+                'name' => $socialUser->getNickname(),
+                'email' => $socialUser->getEmail(),
+                'password' => Hash::make($socialUser->getNickname()), // NicknameをHash
+            ]);
+            Auth::login($user);
+            return redirect('/home');
+        }
+    }
+
 }
