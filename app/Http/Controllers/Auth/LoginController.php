@@ -58,41 +58,20 @@ class LoginController extends Controller
     public function handleProviderCallback()
     {
         //// ほんとはこの辺をSocialiteで独自Driverを作ってやりたい ////
-        // $socialUser = Socialite::driver($provider)->stateless()->user();
-        // $socialUser = Socialite::with($provider)->stateless()->user();
 
         $http = new \GuzzleHttp\Client;
-        $response = $http->post('http://localhost:8080/oauth/token', [
-            'form_params' => [
-                'grant_type' => 'authorization_code',
-                'client_id' => env('PASSPORT_ID'),
-                'client_secret' => env('PASSPORT_SECRET'),
-                'redirect_uri' => 'http://localhost:8000/login/passport/callback',
-                'code' => request()->code
-            ],
-        ]);
-
-        $responseBody = json_decode((string)$response->getBody(), true);
-
-        $response_user = $http->request('GET', 'http://localhost:8080/api/user', [
-            'headers' => [
-                'Accept' => 'application/json',
-                'Authorization' => 'Bearer ' . $responseBody['access_token'],
-            ],
-        ]);
-
-        $user_data = json_decode((string)$response_user->getBody(), true);
-
-        $user = User::where(['email' => $user_data['email']])->first();
+        $access_token = $this->getAccessToken($http);
+        $auth_user = $this->getAuthUser($http, $access_token);
+        $user = User::where(['email' => $auth_user['email']])->first();
 
         if ($user) {
             Auth::login($user);
             return redirect('/home');
         } else {
             $user = User::create([
-                'name' => $user_data['name'],
-                'email' => $user_data['email'],
-                'password' => Hash::make($user_data['name']),
+                'name' => $auth_user['name'],
+                'email' => $auth_user['email'],
+                'password' => Hash::make($auth_user['name']),
             ]);
             Auth::login($user);
             return redirect('/home');
@@ -119,6 +98,41 @@ class LoginController extends Controller
             Auth::login($user);
             return redirect('/home');
         }
+    }
+
+    /**
+     * @param $http
+     * @return mixed
+     */
+    private function getAccessToken($http)
+    {
+        $response = $http->post('http://localhost:8080/oauth/token', [
+            'form_params' => [
+                'grant_type' => 'authorization_code',
+                'client_id' => env('PASSPORT_ID'),
+                'client_secret' => env('PASSPORT_SECRET'),
+                'redirect_uri' => env('PASSPORT_REDIRECT_URI'),
+                'code' => request()->code
+            ],
+        ]);
+        $responseBody = json_decode((string)$response->getBody(), true);
+        return $responseBody['access_token'];
+    }
+
+    /**
+     * @param $http
+     * @param $access_token
+     * @return mixed
+     */
+    private function getAuthUser($http, $access_token)
+    {
+        $response_user_data = $http->request('GET', 'http://localhost:8080/api/user', [
+            'headers' => [
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $access_token,
+            ],
+        ]);
+        return json_decode((string)$response_user_data->getBody(), true);
     }
 
 }
